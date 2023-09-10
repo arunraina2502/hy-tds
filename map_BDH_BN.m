@@ -40,13 +40,19 @@ end
 dlmwrite('valuesn1.dat',mJ,'delimiter',' ','precision','%5.4d')
 dlmwrite('valuesT1.dat',mT,'delimiter',' ','precision','%5.4d')
 
-% MAIN FUNCTION =====================================================
+% =====================================================
+% MAIN FUNCTION
+% =====================================================
 function [mJ,mT] = bDH_bN_datF(NTa,bmg)
 
+% =====================================================
 % define global quantities 
+% =====================================================
 global Q D0 R T0 l phi NL bet NT alp DH tL0 bm
 
+% =====================================================
 % List of input parameters
+% =====================================================
 Q   = 6680;             % Lattice enthalpy [J/mol]
 D0  = 2.33e-7;          % Diffusion prefactor [m2/s]
 R   = 8.3144;           % Gas constant [J/K/mol]
@@ -65,27 +71,35 @@ DH  =-R*T0*bDH;         % Traps binding energy [J/mol]
 alp = 1;                % No. of atoms per trap site   
 tL0 = 1e-6;             % Initial lat. occpancy ratio
 
+% =====================================================
 % Space & time discretization
+% =====================================================
 nx = 2e2;
 nt = 3000;
 xa = linspace(-l/2,l/2 ,nx);
 ta = linspace(0,tf,nt);
 
+% =====================================================
 % Normalised space and time
+% =====================================================
 bQ  = Q/(R*T0); 
 bphi = phi*l^2/(T0*D0);
 x  = xa./l;
 t  = (D0/l^2).*ta;
 dx = x(2)-x(1);
 
+% =====================================================
 % Solving PDE for \bar\theta_L at different \DeltaH 
+% =====================================================
 sol = pdepe(m,@pdefun,@icfun,@bcfun,x,t);
 u = zeros(nt,nx,bm);
 for i = 1:bm
     u(:,:,i)=sol(:,:,i);  
 end
 
+% =====================================================
 % Computing normalised flow rate at x = +l/2 at each time step
+% =====================================================
 T = T0 + phi.*ta;                    % real temperature
 bDL = -exp(-bQ./(1+bphi.*t))*tL0;    % normalised D_L
 % 
@@ -119,7 +133,9 @@ for j = 1:bm
     end
 end
 
-% Plotting ==========================================================
+% =====================================================
+% Plotting
+% =====================================================
 % figure
 % for i = 1:bm
 %     plot(T./T0,bn(:,i)); hold on
@@ -133,7 +149,9 @@ end
 % set(gca,'Fontsize',13)
 clear global Q D0 R T0 l phi NL bet NT alp DH tL0
 
-% PDE coefficients ================================================== 
+% =====================================================
+% PDE coefficients
+% =====================================================
 function [c,f,s] = pdefun(x,t,u,DuDx)
 global Q D0 R T0 l phi NL bet NT alp DH tL0 bm
 
@@ -155,12 +173,16 @@ c = Di(1:bm)';
 f = repmat(bDL,1,bm)'.*DuDx;
 s = St(1:bm)';
 
-% Initial condition ================================================= 
+% =====================================================
+% Initial condition
+% =====================================================
 function u0 = icfun(x)
 global bm
 u0 = ones(1,bm)';
 
-% Boundary conditions =============================================== 
+% =====================================================
+% Boundary conditions 
+% =====================================================
 function [pl,ql,pr,qr] = bcfun(xl,ul,xr,ur,t)
 global bm
 pl = ul(1:bm);
